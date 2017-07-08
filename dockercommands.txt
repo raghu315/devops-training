@@ -1,0 +1,169 @@
+-- install docker
+	cd /etc/yum.repos.d
+	nano docker.repo
+		-- type below lines in file
+		[docker repository]
+		baseurl=https://yum.dockerproject.org/repo/main/centos/7/
+		enabled=1
+		gpgcheck=1
+		gpgkey=https://yum.dockerproject.org/gpg
+	-- save the file
+	yum update
+	yum install -y docker-engine
+	systemctl enable docker
+	systemctl start docker
+	-- confirm if docker is running
+	docker --version
+	docker images
+	-- it's not good idea to manage images using root user
+	-- to access docker images using normal user, user has to be the member of docker group which 
+	-- ...you can check using below command (docker group >>> docker.sock file) 
+	cat /etc/group | grep docker
+	-- above command would display the group but no user associated with it.
+	-- so to add user to docker group run below command
+	usermod -a -G docker [username]
+	--
+
+	
+-- to run the quick test, 
+docker run hello-world (unable to find images because it looks into the local and run from it)
+
+docker info (give complete information about docker, how many container,images etc...talk about var/lib/docker folder where all images, and containters are located)
+
+go inside container folder and discuss about it
+
+docker ps  (to display running container)
+docker ps -a  (container ran in the past
+
+
+go inside images/devicemapper/imagedb/sha256/images
+
+
+--- run the container
+docker run -i -t imagename /bin/bash
+docker restart containerid
+docker restart containername
+docker inspace containerid/name
+docker attach containerid/name
+docker run -itd imagename (-d disconnected mode)
+docker stop containerid/name
+docker inspect imageid/containerid (while running and after stopped)
+docker commit -m 'comment' a 'mainer' containerid newimageid
+
+{{{ create container, install packages and configured it to connect using ssh
+
+   -- pull centos image
+   docker pull centos:latest
+
+   -- create container
+   docker run -p 80 -itd --name='centos/manually:sshenabled centos:latest
+
+   -- you will be loggedin into the container
+   
+	um -y update; yum clean all
+	yum -y install openssh-server passwd; yum clean all
+	yum install sudo
+
+	ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N '' 
+	sudo ssh-keygen -t rsa -f /etc/ssh/ssh_host_ed25519_key -N ''
+	sudo ssh-keygen -t rsa -f /etc/ssh/ssh_host_ecdsa_key -N ''
+
+	useradd user
+	SSH_USERPASS=newpass
+	echo -e "$SSH_USERPASS\n$SSH_USERPASS" | (passwd --stdin user)
+	echo ssh user password: $SSH_USERPASS
+
+	/usr/sbin/sshd
+   -- open another terminal and log in into the container
+	ssh -p 32771 user@localhost	
+}}}
+
+
+
+
+{{{ Create image based on Buildfile
+   -- download following files from https://github.com/CentOS/CentOS-Dockerfiles/tree/master/ssh/centos7
+   -- and copy in a folder
+
+   Dockerfile
+   start.sh
+
+   -- to build image based on Dockerfile, type below command
+   docker build --rm -t centos7:sshenabled .
+
+   -- to create the container based on image run below command
+   docker run -d -p 22 --name='centosImg' centos7:sshenabled
+
+   -- type docker ps and find the port assign to container and run following command to login into the
+   -- container
+   ssh -p 32771 user@localhost
+
+   -- Incase of any issue regarding ssh, visit /root/.ssh and remove the key associated with port nouber from known_host file
+}}}
+
+
+
+
+
+{{{{
+------- to link containers
+
+docker pull mysql:latest
+docker pull wordpress:latest
+
+--create mysql container
+docker run --name wp-mysql -e MYSQL_ROOT_PASSWORD=abc@123 -d mysql:latest
+docker run --name wp-web --link wp-mysql -p 80 -d wordpress
+
+
+--- open up mozila and access below site, it should display wordpress wizard
+localhost:8080 
+
+}}}}
+
+
+{{{ --- Docker-Composer
+
+docker pull mysql:latest
+docker pull wordpress:latest
+
+save below content in docker-compose.yml file
+---start from here
+
+version: '3'
+
+services:
+   db:
+     image: mysql:5.7
+     volumes:
+       - db_data:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: somewordpress
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+
+   wordpress:
+     depends_on:
+       - db
+     image: wordpress:latest
+     ports:
+       - "8000:80"
+     restart: always
+     environment:
+       WORDPRESS_DB_HOST: db:3306
+       WORDPRESS_DB_USER: wordpress
+       WORDPRESS_DB_PASSWORD: wordpress
+volumes:
+    db_data:
+
+--- ends here
+
+-- run below command to run/start services
+
+docker-compse up
+docker-compse ps
+
+
+}}}
