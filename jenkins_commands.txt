@@ -1,0 +1,86 @@
+yum install kernel -devel
+yum install gcc
+
+-- download java from http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+	jdk-8u131-linux-x64.rpm
+	-- install jdk using below command
+	rpm -Uvh jdk-8u131-linux-x64.rpm
+	-- setup default location 
+	alternatives --install /usr/bin/java java /usr/java/latest/bin/java 200000
+	alternatives --install /usr/bin/java javac /usr/java/latest/bin/javac 200000
+	alternatives --install /usr/bin/java jar /usr/java/latest/bin/jar 200000
+	-- set the java home env variable
+	cd /etc
+	nano rc.local
+	-- below touch line add below line and save the file
+	export JAVA_HOME="/usr/java/latest"
+
+	
+-- visit : https://pkg.jenkins.io/redhat-stable/ 
+	sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+	sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+-- update installed packages 
+	yum update
+-- jenkins get installed on port 8080, hence to check if anything running on 8080 type below command
+	telnet localhost 8080
+	-- other command is to check using nmap
+	yum install nmap
+	nmap -sT -O localhost
+	-- if anything is running on 8080 then use below command to kill the process 
+	fuser -k 8080/tcp
+	
+-- install jenkins 
+	-- switch to the root user and root path
+	yum install jenkins
+	-- yum install java-1.8.0-openjdk
+	systemctl status firewalld
+	systemctl status iptables
+	systemctl enable jenkins (to confirm if jenkins available to start)
+	systemctl start jenkins (to start jenkins service)
+	systemctl status jenkins (to check jenkins status)
+	-- open up the browser and access jenkins using http://localhost:8080/
+	-- its going to ask for the password. To get thg password, copy the path, goto ther command line >  cd [path] > cat initialAdminPassword
+	-- setup  user "jenkins"
+	-- to confirm if "jenkins" user can login using below command
+	cat /etc/passwd | grep jenkins
+	-- below command whould not switch to jenkins user
+	sudo su jenkins -  
+	whoami
+	-- below are the location where you could find jenkins config details
+	cd /etc/init.d
+	nano jenkins
+	-- jenkins installation folder
+	cd /var/lib/jenkins/
+	-- manage user permissions
+	Manage Jenkins > Configure Global Security > Autorization > Matrix Base Security 
+	-- Add User 
+	Manage Jenkins > Users > Create User
+	-- Enable jenkin user as sudo user to run any command and also password is not reuqired
+	nano /etc/sudoers
+	-- search for root all(all)  all below that add below line
+	jenkins ALL=(ALL)    NOPASSWD: ALL
+	-- set jenkins password
+	su (switch to root user)
+	passwd jenkins 
+
+--- maven setup
+
+visit https://maven.apache.org/download.cgi and copy the link for
+ Binary tar.gz archive > Linux
+
+cd /opt
+wget [get the link as suggested above]
+tar xzf apache-maven-3.3.9-bin.tar.gz
+
+-- set Maven home path in rc.local file
+cd /etc
+nano rc.local
+
+--copy below path in rc.local file
+export M2_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+
+
+
+
+
