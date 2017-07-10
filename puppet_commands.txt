@@ -1,0 +1,142 @@
+-- Puppet is not in the CentOS yum repository list by default, so we have to install that first before we can invoke yum.
+rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+
+--confirm that the Puppet repository has been installed 
+yum repolist | grep puppet
+
+
+-- install Puppet using yum. 
+yum -y install puppet
+
+
+--Test that Puppet is installed and working with the following command.
+puppet --version
+
+-- Puppet won't run properly if the node's hostname and Fully Qualified Domain Name (FQDN) settings are not properly configured. This -- is because Puppet is often configured with one configuration file that specifies the configuration of several different -- nodes. Puppet needs to know which node it is running on so that it can execute only the relevant parts of the configuration file.
+
+
+facter | grep hostname
+facter | grep fqdn
+
+-- If the mynode parts of the values are incorrect, you can fix this by giving the following command. This will change the mynode -- part of the value in both pairs:
+
+-- If the domain value in fqdn is incorrect, you can fix it by appending a single
+-- line to the system configuration file /etc/resolv.conf. First take a quick look at it (useful if you damage it by accident and -- want to recreate it without recreating the Droplet):
+
+cat /etc/resolv.conf
+
+-- Now append to it:
+cat >>/etc/resolv.conf
+domain example.com
+^D
+
+-- where ^D means to type Control-D to terminate the input to the cat command.
+-- Confirm that your changes worked with:
+
+
+-- Now that Puppet is installed and ready to run, it's time to create a Puppet configuration. The CentOS/Puppet installation process -- should already have created a directory called /etc/puppet (If it hasn't, create it with mkdir /etc/puppet). Let's take a look there:
+
+ls -la /etc/puppet
+
+-- Puppet configuration directory tree naming conventions direct us to create a manifests subdirectory to hold the actual -- configuration file that we're about to create:
+
+mkdir /etc/puppet/manifests
+
+-- create manifests file using nano and write below scripts
+nano createfile.pp
+
+
+node "mynode.example.com" {
+
+file { '/root/example_file.txt':
+    ensure => "file",
+    owner  => "root",
+    group  => "root",
+    mode   => "700",
+    content => "Congratulations!
+Puppet has created this file.
+",}
+
+
+
+--that you have installed Puppet and created a configuration file, you can invoke Puppet.
+puppet apply /etc/puppet/manifests/projectname.pp
+
+ls -la /root
+
+
+*** Resources ***
+user { 'de_engineer':
+  ensure     => present,
+  uid        => '1000',
+  gid        => '1000',
+  shell      => '/bin/bash',
+  home       => '/home/mitchell'
+}
+
+
+-- Resource declarations are formatted as follows:
+resource_type { 'resource_name'
+  attribute => value
+  ...
+}
+
+puppet resource --types
+
+*** Manifests ***
+-- Puppet programs are called manifests. Manifests are composed of puppet code and their filenames use the .pp extension.
+
+Install LAMP with a Single Manifest
+
+You will learn how to write a manifest that will use following types of resource declarations:
+
+exec: To execute commands, such as apt-get
+package: To install packages via apt
+service: To ensure that a service is running
+file: To ensure that certain files exist
+
+--Create Manifest
+sudo vi /etc/puppet/manifests/lamp.pp
+
+# execute 'apt-get update'
+exec { 'apt-update':                    # exec resource named 'apt-update'
+  command => '/usr/bin/apt-get update'  # command this resource will run
+}
+
+# install apache2 package
+package { 'apache2':
+  require => Exec['apt-update'],        # require 'apt-update' before installing
+  ensure => installed,
+}
+
+# ensure apache2 service is running
+service { 'apache2':
+  ensure => running,
+}
+
+# install mysql-server package
+package { 'mysql-server':
+  require => Exec['apt-update'],        # require 'apt-update' before installing
+  ensure => installed,
+}
+
+
+# ensure mysql service is running
+service { 'mysql':
+  ensure => running,
+}
+
+# install php5 package
+package { 'php5':
+  require => Exec['apt-update'],        # require 'apt-update' before installing
+  ensure => installed,
+}
+
+# ensure info.php file exists
+file { '/var/www/html/info.php':
+  ensure => file,
+  content => '<?php  phpinfo(); ?>',    # phpinfo code
+  require => Package['apache2'],        # require 'apache2' package before creating
+} 
+
+
