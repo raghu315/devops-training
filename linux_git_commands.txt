@@ -1,0 +1,70 @@
+aravind8reddy@gmail.com
+sv9642@gmail.com
+
+su -
+yum install git
+
+git --version
+cat .gitconfig
+git config --list
+git config --system system.name "Git RepSer1"
+ls -al /etc/gitconfig
+git config --global system.name "user git reser1" (overrides system.name )
+git config --list 
+git config --global core.editor vim
+git init (new repository)
+rm -rf .git (remove git repository) 
+git status
+git add test.txt (to add into the stage/enable tracking)
+git commit
+git add *
+rm -rf .*
+git commit -m "message for the commit"
+rm filename.txt > git rm filename.txt > git commit
+vim .gitignore
+git clone [existing directory repositorypath] [desitnation directory repository paty]
+git clone https://github.com/[url]
+
+pull and push changes to clone repository
+-------
+get pull [cloned repository path] (pull changes made by cloned resository) 
+get push
+-----
+ssh-keygen
+ssh-copy-id user@remotesystemipaddress
+ssh remotesystemipaddress (to confirm repmote connection is setup)
+git clone user@remotesysipadd:/home/user desinationfolder
+git branch -a (shows all branches)
+git checkout -b development (creates new branch with the name development)
+git checkout master (switch to master branch)
+git merge development --no-ff (go to the branch with which we want to merge development branch and run this command, --no-ff is to retain commit comments after merging with other branch)
+
+
+To connect respository hosted on GitHub from your local machine, follow below steps
+
+From local system
+	(login)
+	ssh-keygen  (enter for default settings)
+	ls -al ../.ssh/ (by default key will be stored in id_rsa.pub file)
+	cat ../.ssh/id_rsa.pub (copy the key displayed on screen and paste it under gitbu/settings/ssh key/addkey)
+
+Visit Github
+	Create repository with readme file
+	copy the repository url using ssh option
+Visit Local system
+	git clone [paste the url copied from github]
+	[for testing, create a file in local and push it to github]
+	echo "this is the file" firstfile.txt (create new file with text)
+	git add firstfile.txt
+	git commit firstfile.txt -m 'commiting from local'
+	git push origin master (push changes to original master on github)
+	[you would find fistfile.txt on github]
+	git checkout -b dev
+	echo "development branch" dev.txt
+	git add dev.txt
+	git commit dev.txt -m "commit from dev branch"
+	git push origin dev (pushing changes in dev branch to origin branch on github)
+	
+	
+	
+
