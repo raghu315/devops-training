@@ -121,13 +121,19 @@ localhost:8080
 
 }}}}
 
+## Install Docker Compose
+
+yum install epel-release
+yum install docker-compose
+
+
+
 
 {{{ --- Docker-Composer
 
 docker pull mysql:latest
 docker pull wordpress:latest
-
-save below content in docker-compose.yml file
+# Create a folder and save below content in docker-compose.yml file
 ---start from here
 
 version: '3'
